@@ -1,0 +1,61 @@
+Sistem Özellikleri
+1. Kullanıcı Yönetimi
+Giriş/Kayıt Sistemi: Kullanıcılar hesap oluşturabilir veya giriş yapabilir
+
+Profil Yönetimi: Kullanıcı bilgileri ve okuma istatistikleri
+
+2. Kitap Kütüphanesi
+Kategorize Edilmiş Kitaplar: Roman, bilim kurgu, tarih vb. kategoriler
+
+Arama ve Filtreleme: Kitap adına veya yazara göre arama yapabilme
+
+Abonelik Sistemi: Premium kitapları okumak için abonelik gereksinimi
+
+3. Gelişmiş PDF Okuyucu
+Sayfa Gezinme: İlk/son sayfaya gitme, belirli bir sayfaya atlama
+
+Yakınlaştırma/Uzaklaştırma: Okuma deneyimini kişiselleştirme
+
+Okuma İlerlemesi: Kitap tamamlanma yüzdesi gösterimi
+
+4. Kişiselleştirme
+Yer İşaretleri: Kaldığınız yeri kaydetme
+
+Okuma Ayarları: Yazı tipi, boyutu, tema rengi gibi ayarlar
+
+Okuma Geçmişi: Okunan kitapların ve son durumun kaydı
+
+5. Abonelik Yönetimi
+Abonelik Durumu: Hangi kitapların abonelikle okunabileceğinin belirtilmesi
+
+Premium İçerik: Abonelik gerektiren kitapların işaretlenmesi
+
+Kullanım Senaryoları
+Yeni Kullanıcı:
+
+Kayıt olur
+
+Ücretsiz kitapları keşfeder
+
+Premium abonelik satın alır
+
+Mevcut Kullanıcı:
+
+Giriş yapar
+
+Abone olduğu kitapları okur
+
+Yer işareti ekler
+
+Okuma ayarlarını kişiselleştirir
+
+Premium Kullanıcı:
+
+Tüm kitaplara erişir
+
+Okuma istatistiklerini görüntüler
+
+Kişisel kütüphanesini yönetir
+
+Bu sistem, kullanıcıların abonelik modeliyle çalışan bir e-kitap platformunda kitapları okuyabilmeleri için gerekli tüm özellikleri içermektedir.
+
