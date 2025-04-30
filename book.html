@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UMUR E-BOOK READER</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #166088;
+            --accent-color: #4fc3f7;
+            --light-bg: #f8f9fa;
+            --dark-text: #333;
+            --light-text: #f8f9fa;
+            --border-color: #ddd;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light-bg);
+            color: var(--dark-text);
+        }
+        
+        .header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .container {
+            display: flex;
+            min-height: calc(100vh - 60px);
+        }
+        
+        .sidebar {
+            width: 250px;
+            background-color: white;
+            border-right: 1px solid var(--border-color);
+            padding: 1rem;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .sidebar-menu li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            color: var(--dark-text);
+            text-decoration: none;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .sidebar-menu i {
+            margin-right: 0.75rem;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+        }
+        
+        .bookshelf {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .book-card {
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+        
+        .book-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .book-cover {
+            height: 250px;
+            background-color: #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .book-cover img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        .book-info {
+            padding: 1rem;
+        }
+        
+        .book-title {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .book-author {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .reader-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 2rem;
+        }
+        
+        .reader-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+        
+        .reader-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .reader-controls {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .reader-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background-color 0.3s;
+        }
+        
+        .reader-btn:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        .reader-btn i {
+            font-size: 0.9rem;
+        }
+        
+        .pdf-viewer-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            background-color: white;
+        }
+        
+        #pdf-viewer {
+            display: block;
+            width: 100%;
+        }
+        
+        .page-navigation {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .page-input {
+            width: 50px;
+            text-align: center;
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+        }
+        
+        .search-bar {
+            display: flex;
+            margin-bottom: 1.5rem;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 5px 0 0 5px;
+            font-size: 1rem;
+        }
+        
+        .search-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 0 5px 5px 0;
+            padding: 0 1.5rem;
+            cursor: pointer;
+        }
+        
+        .category-filter {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+        }
+        
+        .category-btn {
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s;
+        }
+        
+        .category-btn:hover, .category-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+        
+        .loading-spinner {
+            border: 4px solid rgba(0,0,0,0.1);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary-color);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .subscription-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        
+        .bookmark-btn {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background-color: rgba(0,0,0,0.7);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .bookmark-btn.bookmarked {
+            background-color: var(--accent-color);
+        }
+        
+        .bookmark-btn i {
+            font-size: 0.9rem;
+        }
+        
+        .settings-panel {
+            display: none;
+            background-color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            margin-top: 1rem;
+        }
+        
+        .settings-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .settings-label {
+            width: 150px;
+            font-weight: bold;
+        }
+        
+        .settings-control {
+            flex: 1;
+        }
+        
+        .theme-selector {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .theme-option {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        
+        .theme-option.selected {
+            border-color: var(--dark-text);
+        }
+        
+        .font-selector select {
+            padding: 0.5rem;
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .progress-container {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin: 1rem 0;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: var(--primary-color);
+            border-radius: 5px;
+            width: 0%;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .close-modal {
+            float: right;
+            cursor: pointer;
+            font-size: 1.5rem;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            
+            .bookshelf {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+            
+            .reader-controls {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">UMUR KİTAP</div>
+        <div class="user-menu">
+            <span id="user-name">Kullanıcı Adı</span>
+            <div class="user-avatar" id="user-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="sidebar">
+            <ul class="sidebar-menu">
+                <li><a href="#" class="active" id="menu-library"><i class="fas fa-book"></i> Kütüphanem</a></li>
+                <li><a href="#" id="menu-subscriptions"><i class="fas fa-star"></i> Aboneliklerim</a></li>
+                <li><a href="#" id="menu-bookmarks"><i class="fas fa-bookmark"></i> Yer İşaretlerim</a></li>
+                <li><a href="#" id="menu-history"><i class="fas fa-history"></i> Okuma Geçmişi</a></li>
+                <li><a href="#" id="menu-recommendations"><i class="fas fa-lightbulb"></i> Öneriler</a></li>
+                <li><a href="#" id="menu-settings"><i class="fas fa-cog"></i> Ayarlar</a></li>
+            </ul>
+        </div>
+        
+        <div class="main-content">
+            <div id="library-view">
+                <h2>Kütüphanem</h2>
+                <div class="search-bar">
+                    <input type="text" class="search-input" placeholder="Kitap ara...">
+                    <button class="search-btn"><i class="fas fa-search"></i></button>
+                </div>
+                
+                <div class="category-filter">
+                    <button class="category-btn active">Tümü</button>
+                    <button class="category-btn">Roman</button>
+                    <button class="category-btn">Bilim Kurgu</button>
+                    <button class="category-btn">Tarih</button>
+                    <button class="category-btn">Bilim</button>
+                    <button class="category-btn">Kişisel Gelişim</button>
+                    <button class="category-btn">Çocuk</button>
+                </div>
+                
+                <div class="bookshelf" id="bookshelf">
+                    <!-- Kitap kartları buraya eklenecek -->
+                </div>
+            </div>
+            
+            <div class="reader-container" id="reader-container">
+                <div class="reader-header">
+                    <div class="reader-title" id="reader-title">Kitap Başlığı</div>
+                    <div class="reader-controls">
+                        <button class="reader-btn" id="bookmark-btn"><i class="far fa-bookmark"></i> Yer İşareti</button>
+                        <button class="reader-btn" id="settings-btn"><i class="fas fa-cog"></i> Ayarlar</button>
+                        <button class="reader-btn" id="close-reader"><i class="fas fa-times"></i> Kapat</button>
+                    </div>
+                </div>
+                
+                <div class="pdf-viewer-container">
+                    <canvas id="pdf-viewer"></canvas>
+                </div>
+                
+                <div class="settings-panel" id="settings-panel">
+                    <h3>Okuma Ayarları</h3>
+                    <div class="settings-row">
+                        <div class="settings-label">Tema:</div>
+                        <div class="settings-control theme-selector">
+                            <div class="theme-option selected" style="background-color: #f8f9fa;" data-theme="light"></div>
+                            <div class="theme-option" style="background-color: #333;" data-theme="dark"></div>
+                            <div class="theme-option" style="background-color: #f0f7f4;" data-theme="sepia"></div>
+                        </div>
+                    </div>
+                    <div class="settings-row">
+                        <div class="settings-label">Yazı Tipi:</div>
+                        <div class="settings-control font-selector">
+                            <select id="font-select">
+                                <option value="Arial">Arial</option>
+                                <option value="Times New Roman">Times New Roman</option>
+                                <option value="Georgia">Georgia</option>
+                                <option value="Verdana">Verdana</option>
+                                <option value="Courier New">Courier New</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="settings-row">
+                        <div class="settings-label">Yazı Boyutu:</div>
+                        <div class="settings-control">
+                            <input type="range" id="font-size" min="12" max="24" value="16">
+                        </div>
+                    </div>
+                    <div class="settings-row">
+                        <div class="settings-label">Satır Aralığı:</div>
+                        <div class="settings-control">
+                            <input type="range" id="line-spacing" min="1" max="2" step="0.1" value="1.2">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="page-navigation">
+                    <button class="reader-btn" id="first-page"><i class="fas fa-step-backward"></i></button>
+                    <button class="reader-btn" id="prev-page"><i class="fas fa-chevron-left"></i> Önceki</button>
+                    <span>Sayfa <input type="number" class="page-input" id="current-page"> / <span id="total-pages">0</span></span>
+                    <button class="reader-btn" id="next-page">Sonraki <i class="fas fa-chevron-right"></i></button>
+                    <button class="reader-btn" id="last-page"><i class="fas fa-step-forward"></i></button>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="login-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Giriş Yap</h2>
+            <form id="login-form">
+                <div style="margin-bottom: 1rem;">
+                    <label for="login-email">E-posta</label>
+                    <input type="email" id="login-email" style="width: 100%; padding: 0.5rem; margin-top: 0.25rem;">
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label for="login-password">Şifre</label>
+                    <input type="password" id="login-password" style="width: 100%; padding: 0.5rem; margin-top: 0.25rem;">
+                </div>
+                <button type="submit" style="width: 100%; padding: 0.75rem; background-color: var(--primary-color); color: white; border: none; border-radius: 5px; cursor: pointer;">Giriş Yap</button>
+            </form>
+            <p style="text-align: center; margin-top: 1rem;">Hesabınız yok mu? <a href="#" id="show-register" style="color: var(--primary-color);">Kayıt Ol</a></p>
+        </div>
+    </div>
+    
+    <div class="modal" id="register-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Kayıt Ol</h2>
+            <form id="register-form">
+                <div style="margin-bottom: 1rem;">
+                    <label for="register-name">Ad Soyad</label>
+                    <input type="text" id="register-name" style="width: 100%; padding: 0.5rem; margin-top: 0.25rem;">
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label for="register-email">E-posta</label>
+                    <input type="email" id="register-email" style="width: 100%; padding: 0.5rem; margin-top: 0.25rem;">
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label for="register-password">Şifre</label>
+                    <input type="password" id="register-password" style="width: 100%; padding: 0.5rem; margin-top: 0.25rem;">
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label for="register-confirm">Şifre Tekrar</label>
+                    <input type="password" id="register-confirm" style="width: 100%; padding: 0.5rem; margin-top: 0.25rem;">
+                </div>
+                <button type="submit" style="width: 100%; padding: 0.75rem; background-color: var(--primary-color); color: white; border: none; border-radius: 5px; cursor: pointer;">Kayıt Ol</button>
+            </form>
+            <p style="text-align: center; margin-top: 1rem;">Zaten hesabınız var mı? <a href="#" id="show-login" style="color: var(--primary-color);">Giriş Yap</a></p>
+        </div>
+    </div>
+    
+    <script>
+        // PDF.js worker yolu
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
+        
+        // DOM elementleri
+        const pdfViewer = document.getElementById('pdf-viewer');
+        const readerContainer = document.getElementById('reader-container');
+        const libraryView = document.getElementById('library-view');
+        const bookshelf = document.getElementById('bookshelf');
+        const readerTitle = document.getElementById('reader-title');
+        const currentPageInput = document.getElementById('current-page');
+        const totalPagesSpan = document.getElementById('total-pages');
+        const prevPageBtn = document.getElementById('prev-page');
+        const nextPageBtn = document.getElementById('next-page');
+        const firstPageBtn = document.getElementById('first-page');
+        const lastPageBtn = document.getElementById('last-page');
+        const closeReaderBtn = document.getElementById('close-reader');
+        const bookmarkBtn = document.getElementById('bookmark-btn');
+        const settingsBtn = document.getElementById('settings-btn');
+        const settingsPanel = document.getElementById('settings-panel');
+        const progressBar = document.getElementById('progress-bar');
+        const loginModal = document.getElementById('login-modal');
+        const registerModal = document.getElementById('register-modal');
+        const showRegister = document.getElementById('show-register');
+        const showLogin = document.getElementById('show-login');
+        const closeModalBtns = document.querySelectorAll('.close-modal');
+        const userAvatar = document.getElementById('user-avatar');
+        
+        // Uygulama durumu
+        let state = {
+            pdfDoc: null,
+            currentPage: 1,
+            scale: 1.2,
+            isBookmarked: false,
+            user: null,
+            books: [
+                {
+                    id: 1,
+                    title: "Suç ve Ceza",
+                    author: "Fyodor Dostoyevski",
+                    cover: "https://m.media-amazon.com/images/I/71tR3OTD3VL._AC_UF1000,1000_QL80_.jpg",
+                    pages: 350,
+                    category: "Roman",
+                    isSubscribed: true,
+                    progress: 45,
+                    lastRead: "2023-05-15"
+                },
+                {
+                    id: 2,
+                    title: "1984",
+                    author: "George Orwell",
+                    cover: "https://m.media-amazon.com/images/I/81WUt9UEURL._AC_UF1000,1000_QL80_.jpg",
+                    pages: 328,
+                    category: "Bilim Kurgu",
+                    isSubscribed: true,
+                    progress: 78,
+                    lastRead: "2023-06-20"
+                },
+                {
+                    id: 3,
+                    title: "Sapiens",
+                    author: "Yuval Noah Harari",
+                    cover: "https://m.media-amazon.com/images/I/713jIoMO3UL._AC_UF1000,1000_QL80_.jpg",
+                    pages: 512,
+                    category: "Bilim",
+                    isSubscribed: false,
+                    progress: 0,
+                    lastRead: null
+                },
+                {
+                    id: 4,
+                    title: "Küçük Prens",
+                    author: "Antoine de Saint-Exupéry",
+                    cover: "https://m.media-amazon.com/images/I/71QEWLaOZQL._AC_UF1000,1000_QL80_.jpg",
+                    pages: 96,
+                    category: "Çocuk",
+                    isSubscribed: true,
+                    progress: 100,
+                    lastRead: "2023-04-10"
+                },
+                {
+                    id: 5,
+                    title: "Beyaz Diş",
+                    author: "Jack London",
+                    cover: "https://m.media-amazon.com/images/I/91Y1+O61URL._AC_UF1000,1000_QL80_.jpg",
+                    pages: 256,
+                    category: "Roman",
+                    isSubscribed: false,
+                    progress: 12,
+                    lastRead: "2023-03-05"
+                },
+                {
+                    id: 6,
+                    title: "Dönüşüm",
+                    author: "Franz Kafka",
+                    cover: "https://m.media-amazon.com/images/I/71X6YzwX0tL._AC_UF1000,1000_QL80_.jpg",
+                    pages: 80,
+                    category: "Roman",
+                    isSubscribed: true,
+                    progress: 65,
+                    lastRead: "2023-07-01"
+                }
+            ],
+            currentBook: null
+        };
+        
+        // Sayfa yüklendiğinde
+        document.addEventListener('DOMContentLoaded', function() {
+            renderBookshelf();
+            setupEventListeners();
+            checkAuth();
+        });
+        
+        // Event listener'ları ayarla
+        function setupEventListeners() {
+            // Sayfa gezinme
+            prevPageBtn.addEventListener('click', goToPreviousPage);
+            nextPageBtn.addEventListener('click', goToNextPage);
+            firstPageBtn.addEventListener('click', goToFirstPage);
+            lastPageBtn.addEventListener('click', goToLastPage);
+            currentPageInput.addEventListener('change', goToPage);
+            
+            // Okuyucu kontrolleri
+            closeReaderBtn.addEventListener('click', closeReader);
+            bookmarkBtn.addEventListener('click', toggleBookmark);
+            settingsBtn.addEventListener('click', toggleSettingsPanel);
+            
+            // Kullanıcı işlemleri
+            userAvatar.addEventListener('click', toggleAuthModal);
+            showRegister.addEventListener('click', function(e) {
+                e.preventDefault();
+                loginModal.style.display = "none";
+                registerModal.style.display = "flex";
+            });
+            showLogin.addEventListener('click', function(e) {
+                e.preventDefault();
+                registerModal.style.display = "none";
+                loginModal.style.display = "flex";
+            });
+            closeModalBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    loginModal.style.display = "none";
+                    registerModal.style.display = "none";
+                });
+            });
+            
+            // Kategori filtreleme
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    filterBooks(this.textContent);
+                });
+            });
+            
+            // Arama
+            document.querySelector('.search-input').addEventListener('input', function() {
+                searchBooks(this.value);
+            });
+        }
+        
+        // Kitaplığı renderla
+        function renderBookshelf(filteredBooks = null) {
+            bookshelf.innerHTML = '';
+            
+            const booksToRender = filteredBooks || state.books;
+            
+            if (booksToRender.length === 0) {
+                bookshelf.innerHTML = '<p>Gösterilecek kitap bulunamadı.</p>';
+                return;
+            }
+            
+            booksToRender.forEach(book => {
+                const bookCard = document.createElement('div');
+                bookCard.className = 'book-card';
+                bookCard.dataset.id = book.id;
+                
+                const progressPercentage = book.progress;
+                const progressColor = progressPercentage < 30 ? '#f44336' : 
+                                    progressPercentage < 70 ? '#ff9800' : '#4caf50';
+                
+                bookCard.innerHTML = `
+                    <div class="book-cover">
+                        ${book.isSubscribed ? '<div class="subscription-badge">ABONE</div>' : ''}
+                        <img src="${book.cover}" alt="${book.title}">
+                        <button class="bookmark-btn ${book.isBookmarked ? 'bookmarked' : ''}">
+                            <i class="fas fa-bookmark"></i>
+                        </button>
+                        <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 5px; background-color: #e0e0e0;">
+                            <div style="height: 100%; width: ${progressPercentage}%; background-color: ${progressColor};"></div>
+                        </div>
+                    </div>
+                    <div class="book-info">
+                        <div class="book-title">${book.title}</div>
+                        <div class="book-author">${book.author}</div>
+                    </div>
+                `;
+                
+                bookCard.addEventListener('click', function() {
+                    openBook(book);
+                });
+                
+                bookshelf.appendChild(bookCard);
+            });
+        }
+        
+        // Kitap aç
+        function openBook(book) {
+            if (!book.isSubscribed && !state.user) {
+                alert("Bu kitabı okumak için giriş yapmalı ve abone olmalısınız.");
+                toggleAuthModal();
+                return;
+            }
+            
+            if (!book.isSubscribed) {
+                alert("Bu kitaba abone değilsiniz. Abone olmak için premium üyeliğinizi yükseltin.");
+                return;
+            }
+            
+            state.currentBook = book;
+            readerTitle.textContent = book.title;
+            libraryView.style.display = 'none';
+            readerContainer.style.display = 'flex';
+            
+            // PDF yükleme simülasyonu
+            showLoading();
+            
+            // Gerçek uygulamada burada PDF yükleme işlemi yapılır
+            // Bu örnekte rastgele bir PDF yüklüyoruz
+            const pdfUrl = 'https://arxiv.org/pdf/2212.08011.pdf';
+            
+            pdfjsLib.getDocument(pdfUrl).promise.then(function(pdfDoc_) {
+                state.pdfDoc = pdfDoc_;
+                totalPagesSpan.textContent = state.pdfDoc.numPages;
+                currentPageInput.value = 1;
+                state.currentPage = 1;
+                
+                // İlerleme çubuğunu güncelle
+                updateProgressBar();
+                
+                // Sayfayı renderla
+                renderPage(state.currentPage);
+                
+                // Yer işareti durumunu kontrol et
+                checkBookmarkStatus();
+            }).catch(function(error) {
+                alert('PDF yüklenirken hata oluştu: ' + error.message);
+                closeReader();
+            });
+        }
+        
+        // Sayfayı renderla
+        function renderPage(pageNum) {
+            if (!state.pdfDoc) return;
+            
+            state.pdfDoc.getPage(pageNum).then(function(page) {
+                const viewport = page.getViewport({ scale: state.scale });
+                pdfViewer.height = viewport.height;
+                pdfViewer.width = viewport.width;
+                
+                const renderContext = {
+                    canvasContext: pdfViewer.getContext('2d'),
+                    viewport: viewport
+                };
+                
+                page.render(renderContext).promise.then(function() {
+                    currentPageInput.value = pageNum;
+                    state.currentPage = pageNum;
+                    
+                    // Okuma ilerlemesini güncelle
+                    updateReadingProgress(pageNum);
+                });
+            });
+        }
+        
+        // Önceki sayfaya git
+        function goToPreviousPage() {
+            if (state.currentPage > 1) {
+                state.currentPage--;
+                renderPage(state.currentPage);
+            }
+        }
+        
+        // Sonraki sayfaya git
+        function goToNextPage() {
+            if (state.currentPage < state.pdfDoc.numPages) {
+                state.currentPage++;
+                renderPage(state.currentPage);
+            }
+        }
+        
+        // İlk sayfaya git
+        function goToFirstPage() {
+            state.currentPage = 1;
+            renderPage(state.currentPage);
+        }
+        
+        // Son sayfaya git
+        function goToLastPage() {
+            state.currentPage = state.pdfDoc.numPages;
+            renderPage(state.currentPage);
+        }
+        
+        // Belirli bir sayfaya git
+        function goToPage() {
+            const pageNum = parseInt(currentPageInput.value);
+            if (pageNum >= 1 && pageNum <= state.pdfDoc.numPages) {
+                state.currentPage = pageNum;
+                renderPage(state.currentPage);
+            } else {
+                currentPageInput.value = state.currentPage;
+            }
+        }
+        
+        // Okuyucuyu kapat
+        function closeReader() {
+            readerContainer.style.display = 'none';
+            libraryView.style.display = 'block';
+            state.pdfDoc = null;
+            state.currentBook = null;
+        }
+        
+        // Yer işaretini aç/kapa
+        function toggleBookmark() {
+            state.isBookmarked = !state.isBookmarked;
+            bookmarkBtn.innerHTML = state.isBookmarked ? 
+                '<i class="fas fa-bookmark"></i> Yer İşaretli' : 
+                '<i class="far fa-bookmark"></i> Yer İşareti';
+            
+            // Gerçek uygulamada burada sunucuya yer işareti durumunu kaydedersiniz
+            if (state.currentBook) {
+                const book = state.books.find(b => b.id === state.currentBook.id);
+                if (book) {
+                    book.isBookmarked = state.isBookmarked;
+                }
+            }
+        }
+        
+        // Yer işareti durumunu kontrol et
+        function checkBookmarkStatus() {
+            if (!state.currentBook) return;
+            
+            const book = state.books.find(b => b.id === state.currentBook.id);
+            if (book) {
+                state.isBookmarked = book.isBookmarked || false;
+                bookmarkBtn.innerHTML = state.isBookmarked ? 
+                    '<i class="fas fa-bookmark"></i> Yer İşaretli' : 
+                    '<i class="far fa-bookmark"></i> Yer İşareti';
+            }
+        }
+        
+        // Ayarlar panelini aç/kapa
+        function toggleSettingsPanel() {
+            settingsPanel.style.display = settingsPanel.style.display === 'block' ? 'none' : 'block';
+        }
+        
+        // Okuma ilerlemesini güncelle
+        function updateReadingProgress(currentPage) {
+            if (!state.pdfDoc || !state.currentBook) return;
+            
+            const progress = Math.round((currentPage / state.pdfDoc.numPages) * 100);
+            
+            // Kitabın ilerlemesini güncelle
+            const book = state.books.find(b => b.id === state.currentBook.id);
+            if (book) {
+                book.progress = progress;
+                book.lastRead = new Date().toISOString().split('T')[0];
+            }
+            
+            // İlerleme çubuğunu güncelle
+            updateProgressBar();
+        }
+        
+        // İlerleme çubuğunu güncelle
+        function updateProgressBar() {
+            if (!state.pdfDoc || !state.currentBook) return;
+            
+            const progress = (state.currentPage / state.pdfDoc.numPages) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+        
+        // Yükleniyor göster
+        function showLoading() {
+            pdfViewer.innerHTML = '<div class="loading"><div class="loading-spinner"></div></div>';
+        }
+        
+        // Kitapları filtrele
+        function filterBooks(category) {
+            if (category === 'Tümü') {
+                renderBookshelf();
+                return;
+            }
+            
+            const filteredBooks = state.books.filter(book => book.category === category);
+            renderBookshelf(filteredBooks);
+        }
+        
+        // Kitapları ara
+        function searchBooks(query) {
+            if (!query) {
+                renderBookshelf();
+                return;
+            }
+            
+            const lowerQuery = query.toLowerCase();
+            const filteredBooks = state.books.filter(book => 
+                book.title.toLowerCase().includes(lowerQuery) || 
+                book.author.toLowerCase().includes(lowerQuery)
+            );
+            
+            renderBookshelf(filteredBooks);
+        }
+        
+        // Kimlik doğrulama kontrolü
+        function checkAuth() {
+            // Gerçek uygulamada burada oturum kontrolü yapılır
+            const user = localStorage.getItem('ebook_user');
+            if (user) {
+                state.user = JSON.parse(user);
+                document.getElementById('user-name').textContent = state.user.name;
+            }
+        }
+        
+        // Giriş/çıkış modalını aç
+        function toggleAuthModal() {
+            if (state.user) {
+                // Çıkış yap
+                state.user = null;
+                localStorage.removeItem('ebook_user');
+                document.getElementById('user-name').textContent = 'Giriş Yap';
+                alert('Başarıyla çıkış yaptınız.');
+            } else {
+                // Giriş yap
+                loginModal.style.display = 'flex';
+            }
+        }
+    </script>
+</body>
+</html>
