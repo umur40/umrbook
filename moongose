@@ -1,0 +1,14 @@
+// models/Book.js
+const mongoose = require('mongoose');
+
+const BookSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  author: { type: String, required: true },
+  pdfUrl: { type: String, required: true },
+  coverImage: { type: String },
+  requiresSubscription: { type: Boolean, default: true },
+  category: { type: String, enum: ['Roman', 'Bilim', 'Tarih'] },
+  pages: { type: Number }
+});
+
+module.exports = mongoose.model('Book', BookSchema);
